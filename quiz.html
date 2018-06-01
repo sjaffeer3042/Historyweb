@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Quiz</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.min.js"></script>
+    <style>
+        body{
+            background-color:red;
+        }
+        #myPage .panel {
+            width: 400px;   float: left;    margin: 20px;
+        }
+        #myPage .panel-heading {
+            background-color: darkred;     color: white; 
+        }         
+        #myPage .panel-body {
+            background-color: black;        color: white; 
+        }
+        #myPage .panel-footer {
+            background-color: darkred;      color: black; 
+        }
+        .mytext{
+            font-size: 18pt;
+            margin-left: 40px;
+        }
+        .jumbotron{
+            text-align: center;
+            color: white;
+            background-image: url(https://thumbs.dreamstime.com/b/old-grunge-map-history-background-travel-111339370.jpg);
+        }
+        .titles{
+            background-color:blue;
+            color:white;
+            text-align:center;
+        }
+        .logo{
+            width:90%;
+        }
+        .item img{
+            width:1000px;
+        }      
+    </style>
+
+    <script type="text/template" id="Template">
+        <div class="panel panel-default">
+            <div class="panel-heading"> Que {{qNum}}:  {{info.Question}} </div>
+            <div class="panel-body"> A. {{info.A}} </div>
+            <div class="panel-body"> B. {{info.B}} </div>
+            <div class="panel-body"> C. {{info.C}} </div>
+            <div class="panel-body"> D. {{info.D}} </div>           
+            <div class="panel-footer">
+                <input type="text" id="{{qKey}}" placeholder="Choice letter">
+            </div>
+        </div>
+    </script>
+
+    <script>
+        var data; //global variable
+
+        function getData(){         
+            $.getJSON("https://historyquiz-1f5a4.firebaseio.com/.json", function(result){
+                data = result;
+                displayQuestions(); 
+            }); 
+        }
+    
+        // DISPLAY QUESTIONS
+        function displayQuestions(){
+            var build ="";
+            var template = document.getElementById("Template").innerHTML;  
+            var qNumber =0; 
+        
+            for(var key in data){
+                qNumber++;
+                quesJSON ={
+                    "info": data[key], 
+                    "qKey": key,
+                    "qNum": qNumber
+                }
+                build += Mustache.render(template, quesJSON);     
+            }
+            document.getElementById("quiz").innerHTML = build;                          
+        }                    
+        
+        
+        function checkAnswers(){
+            var score = 0;
+            var count = 0;
+            for(var key in data){
+                var correctAns = data[key].Answer;
+                var userAns = document.getElementById(key).value;               
+                count++;
+                if (userAns.toUpperCase() == correctAns){
+                    score++;
+                }
+                var grd = (score/count * 100).toFixed(0);       
+            }
+            document.getElementById("score").innerHTML = "<h1>You answered " + score + " out of " + count+" questions correctly!<br><br>That's a grade of<b> "+ grd + "%</b></h1>"; 
+        }
+    </script>
+</head>
+<body onload="getData()" id="myPage">
+        <div class="container">
+
+                <div class="jumbotron">
+                        <h1> QUIZ </h1>
+                        <p>Multiple Choice Quiz</p> 
+                </div>
+                    
+                <nav class="navbar navbar-inverse">
+                    <div class="container-fluid">
+                            <ul class="nav navbar-nav">
+                                <li><a href="index.html">Home</a></li>
+                                <li><a href="background.html">Background</a></li>
+                                <li><a href="japan.html">Japan</a></li>
+                                <li><a href="europe.html">Europe</a></li>
+                                <li class="active"><a href="quiz.html">Quiz</a></li>
+                                <li><a href="about.html">About Us</a></li>
+                            </ul>
+                    </div>
+                </nav>
+
+                <h1>Enter your choices below. Then press "Score Quiz"</h1>
+                
+                <div id="quiz"></div>
+                    <button onclick="checkAnswers()" type="button" class="btn btn-success btn-lg">SCORE QUIZ</button>
+                <div id="score"></div>
+
+        </div>
+</body>
+</html>
